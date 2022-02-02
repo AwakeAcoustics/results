@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/861267/4812a7b8c32e42dbbc64d31ac715adcc
+bundleId: https://api.rpubs.com/api/v1/document/861267/4812a7b8c32e42dbbc64d31ac715adcc
+url: http://rpubs.com/dlizcano/861267
+when: 1643821380.96971
+lastSyncTime: 1643821380.96971

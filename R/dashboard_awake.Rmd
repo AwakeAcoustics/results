@@ -1,0 +1,306 @@
+---
+title: "Resultados del Monitoreo Acústico Awake"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+#    storyboard: true
+    social: menu
+    source: embed
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+Hitos
+=======================================================================
+
+Column {data-width=300}
+-----------------------------------------------------------------------
+
+
+### chart1
+
+```{r}
+valueBox(260, caption = "Horas de capacitación", icon="fa-graduation-cap")
+
+
+```
+
+
+### Chart 2
+
+```{r}
+valueBox(27, caption = "Anfitriones participando", 
+         icon="fa-users", color= "warning")
+
+
+```
+
+
+### Chart 3
+
+```{r}
+valueBox(167, caption = "Sitios instalados", 
+         icon="fa-map-marker", color= "info")
+
+
+```
+
+
+### Chart 3
+
+```{r}
+valueBox(526.332, caption = "Archivos de Audio", 
+         icon="fa-file-audio-o", color= "success")
+
+
+```
+
+### Chart 3
+
+```{r}
+valueBox(217, caption = "Especies validadas", 
+         icon="fa-check-square-o", color= "info")
+
+
+```
+
+
+Column {data-width=300}
+-----------------------------------------------------------------------
+
+
+### Anfitriones subiendo información a la plataforma
+
+```{r}
+gauge(95, min = 0, max = 100, symbol = '%',
+      #label="Anfitriones subiendo información a la plataforma",
+      gaugeSectors(
+  success = c(70, 100), warning = c(40, 69), danger = c(0, 39)
+  ))
+
+```
+
+### Participación de mujeres
+
+```{r}
+gauge(45, min = 0, max = 100, symbol = '%',
+      #label="Anfitriones subiendo información a la plataforma",
+      gaugeSectors(
+  success = c(70, 100), warning = c(40, 69), danger = c(0, 39)
+  ))
+
+```
+
+### Chart 3
+
+```{r}
+valueBox(42, caption = "Patrones de reconocimiento", 
+         icon="fa-cogs", color= "success")
+
+
+```
+
+### Chart 3
+
+```{r}
+valueBox(17, caption = "Especies priorizadas", 
+         icon="fa-list-alt", color= "success")
+
+
+```
+
+
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### Resumen de metodos y resultados
+
+Capacitaciones
+
+- Realizamos talleres presenciales con los anfitriones en Choco, Cauca, Putumayo Valle del Cauca, Meta, y Casanare.
+
+- Realizamos capacitaciones virtuales con los anfitriones para resolver dudas y hacer sueguimiento al proceso de programación, configuración y subida de informacion a la plataforma Arbimon.
+
+- Visitas de campo a los 27 anfitriones.
+
+Grabadoras
+
+- Instalamos 100 grabadoras del tipo Audiomoth, de la mano de 27 anfitriones de Awake.
+
+- Las grabadoras capturaron mas de medio millon de archivos de audio que corresponden a 1.5 Teras de información.
+
+- Se desarrolló e implementó un protocolo de monitoreo, que puede ser replicado.
+
+Detalles adicionales 
+
+- [Monitoreo Acústico](https://monitoreo-acustico.netlify.app)
+- [AwakeBIO](https://awake.travel/awakebio)
+
+
+Mapa
+=======================================================================
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Localizacion de especies identificadas
+
+
+
+
+```{r}
+#### Codigo mapa
+library(readxl)
+library(tidyverse)
+library(viridis)
+library(patchwork)
+library(hrbrthemes)
+library(circlize)
+library(sf)
+library(mapview)
+library(networkD3)
+
+awake <- read_excel("D:/BoxFiles/Box Sync/CodigoR/Awake_datos/data/Plantilla_de_registros_3.5_aves_cleaned_AnfitrionFixed.xlsx")
+
+awake_sf = st_as_sf(awake, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+
+
+# df %>% group_by(id) %>% mutate(csum = cumsum(value))
+
+awake_2 <- awake_sf %>%
+  group_by(verbatimLocality) %>%
+  # mutate(csum = cumsum(occurrenceID))
+  summarise(recording = n_distinct(occurrenceID )) 
+
+mapview(awake_2, cex = "recording", alpha = 0.1,
+        zcol = "verbatimLocality", map.types	
+="CartoDB.DarkMatter" ) #zcol = "verbatimLocality
+
+
+```
+Column {.tabset data-width=350}
+-----------------------------------------------------------------------
+
+### Metodología
+
+Grabaciones
+
+- Instalamos 100 grabadoras del tipo Audiomoth, de la mano de 27 anfitriones de Awake.
+
+- Cada anfitrion instaló de una a cuatro grabadoras en su reserva.
+
+- Las grabadoras estuvieron activas de una semana a un mes en cada sitio de instalacion.
+
+- En cada región un especialista identifico acusticamente algunas especies.
+
+- El tamaño del circulo en el mapa representa el número de grabaciones de cada reserva que se lograron identificar hasta especie.
+
+
+Detalles adicionales 
+
+- [Monitoreo Acústico](https://monitoreo-acustico.netlify.app)
+- [AwakeBIO](https://awake.travel/awakebio)
+
+
+
+Especies y anfitriones
+=======================================================================
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Red de especies y anfitriones
+
+```{r}
+#Codigo para red bipartita
+
+awake_3 <- awake_sf %>%
+  select(scientificName, eventDate, stateProvince,
+         order, family, genus, occurrenceID, verbatimLocality) %>% 
+   count(scientificName, verbatimLocality, sort = TRUE)
+  #filter(stateProvince=="Cauca") %>%
+  #group_by(verbatimLocality) %>%
+   #mutate(csum = sum(scientificName))
+  #summarise(recording = n_distinct(occurrenceID ))
+
+#### put italica
+#awake_3$scientificName <- paste("_",awake_3$scientificName, "_", sep="")
+
+# From these flows we need to create a node data frame: it lists every entities involved in the flow
+nodes <- data.frame(name=c(
+            as.character(awake_3$scientificName),
+            as.character(awake_3$verbatimLocality)) %>%
+                      unique())
+
+awake_3$scientificName=match(awake_3$scientificName, nodes$name)-1 
+awake_3$verbatimLocality=match(awake_3$verbatimLocality, nodes$name)-1
+
+# prepare colour scale
+ColourScal ='d3.scaleOrdinal() .range(["#FDE725FF","#B4DE2CFF","#6DCD59FF","#35B779FF","#1F9E89FF","#26828EFF","#31688EFF","#3E4A89FF","#482878FF","#440154FF"])'
+
+
+# Make the Network
+sankeyNetwork(Links = awake_3, Nodes = nodes,
+                     Source = "scientificName", 
+                    Target = "verbatimLocality",
+                     Value = "n", NodeID = "name", 
+                     sinksRight=FALSE, colourScale=ColourScal, nodeWidth=40, fontSize=10, nodePadding=4, width=1000)
+
+
+# ="CartoDB.DarkMatter" ) #zcol = "verbatimLocality
+
+#library(dygraphs)
+#dygraph(nhtemp, main = "New Haven Temperatures") %>% 
+#  dyRangeSelector(dateWindow = c("1920-01-01", "1960-01-01"))
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Metodología
+
+- Se selecionaron 17 especies con muy buenos patrones de reconocimiento en Arbimon y se buscaron con algoritmos de inteligencia artificial en todas las grabaciones. 
+
+- En la grafica se muestra cuales especies se encuentran en la reserva de cual anfitrion.
+
+- El ancho de la banda gris representa el numero de grabaciones de esa especie en la reserva.
+
+
+Detalles adicionales 
+
+- [Monitoreo Acústico](https://monitoreo-acustico.netlify.app)
+- [AwakeBIO](https://awake.travel/awakebio)
+
+
+Taxonomia
+=======================================================================
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+
+### Especies encontradas en Putumayo
+
+```{r}
+library(plotly)
+p <- ggplot(data = diamonds, aes(x = cut, fill = clarity)) +
+            geom_bar(position = "dodge")
+ggplotly(p)
+```
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Texto
+
+
+https://plot.ly/ggplot2/
+
+If you use ggplot2, `ggplotly()` converts your plots to an interactive, web-based version! It also provides sensible tooltips, which assists decoding of values encoded as visual properties in the plot.
+
+plotly supports some chart types that ggplot2 doesn't (such as 3D surface, point, and line plots). You can create these (or any other plotly) charts using `plot_ly()`.
+

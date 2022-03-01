@@ -2,7 +2,7 @@
 
 ## Dashboard para resultados de Awake Acustico
 
-awakeacoustics.github.io/awakeacoustics/
+https://awakeacoustics.github.io/AwakeAcoustics/
 
 ## Resultados generales del proyecto:
 
